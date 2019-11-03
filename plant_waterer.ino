@@ -71,6 +71,8 @@ void Pump(int stat)
   {
     digitalWrite(pump,stat);
     Serial.println("Pump ON");
+    delay(200);
+    digitalWrite(pump,0);
   }
 }
 
