@@ -1,7 +1,7 @@
 #include <dht.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial hc06(2,3);
+SoftwareSerial HM10(2,3);
 dht DHT;
 
 #define DHT11_PIN 5
@@ -11,14 +11,18 @@ const int pMoisture=A1;       // moisture sensor at Arduino analog pin A1
 const int pump=4; 
 const int trigPin = 11;
 const int echoPin = 10;
+const int holdPin = 12;
 
 //Variables
 int value;          // Store value from photoresistor (0-1023)
 int moisture;
+int sleep;
 int limit = 700;
-unsigned int blue=0; 
+unsigned int blue=0;
 long duration;
 int distance;
+char appData;  
+String inData = "";
 
 void setup(){
  pinMode(pump,OUTPUT);
@@ -26,32 +30,42 @@ void setup(){
  pinMode(pMoisture, INPUT);// Set pMoisture - A1 pin as an input (optional)
  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+ pinMode(holdPin, INPUT); // hold evreything
+ pinMode(13, INPUT); // hold evreything
+ pinMode(6, OUTPUT); // onboard LED
+ digitalWrite(6, LOW); // switch OFF LED
+ pinMode(7, OUTPUT); // onboard LED
+ digitalWrite(7, LOW); // switch OFF LED
+ pinMode(8, OUTPUT); // onboard LED
+ digitalWrite(8, LOW); // switch OFF LED
  Serial.begin(9600);
 
  Serial.println("Commands:");
 
  //Initialize Bluetooth Serial Port
- hc06.begin(9600);
+ HM10.begin(9600);
 }
 
 void readSensors(){
   value = analogRead(pResistor);
-  Serial.print("Light(low is dark) = ");
-  Serial.println(value);
+  //Serial.print("Light(low is dark) = ");
+  //Serial.println(value);
   
   moisture = analogRead(pMoisture);
-  Serial.print("Moisture(high is dry) = ");
-  Serial.println(moisture);
+  //Serial.print("Moisture(high is dry) = ");
+  //Serial.println(moisture);
   
   int chk = DHT.read11(DHT11_PIN);
-  Serial.print("Temperature = ");
-  Serial.println(DHT.temperature);
-  Serial.print("Humidity = ");
-  Serial.println(DHT.humidity);
+  //Serial.print("Temperature = ");
+  //Serial.println(DHT.temperature);
+  //Serial.print("Humidity = ");
+  //Serial.println(DHT.humidity);
   //You can change value "25"
   if(moisture>limit)
   {
+    digitalWrite(7, HIGH); // switch OFF LED
     Pump(1); 
+    digitalWrite(7, LOW); // switch OFF LED
   }
   else
   { 
@@ -70,30 +84,10 @@ void Pump(int stat)
   if(stat == 1)
   {
     digitalWrite(pump,stat);
-    Serial.println("Pump ON");
-    delay(200);
+    //Serial.println("Pump ON");
+    delay(1000);
     digitalWrite(pump,0);
   }
-}
-
-int Bluetooth()
-{
-   // send data only when you receive data:
-   if(Serial.available() > 0) 
-   {
-    // read the incoming byte:
-    blue = Serial.read();
-
-    // say what you got:
-    Serial.print("Bluetooth");
-    Serial.println(blue);
-    if(blue == 48)
-      return 0;
-    if(blue == 49)
-      return 1;
-  }
-  else 
-  return 0;
 }
 
 void readWaterLevel(){
@@ -113,20 +107,47 @@ void readWaterLevel(){
   distance= duration*0.034/2;
   
   // Prints the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.println(distance);
+  //Serial.print("Distance: ");
+  //Serial.println(distance);
+
+  if (distance<10){
+    digitalWrite(8, HIGH); // switch ON LED
+  }else if (distance<200 & distance>10){
+    digitalWrite(8, LOW); // switch OFF LED
+  } 
 }
 
 void loop() 
 { 
-  while(Bluetooth()==1)
-  {
-    blue = 0;
-    break;
-  }
-  while(Bluetooth()==0)
-  {
-    readSensors();
+  sleep = digitalRead(holdPin);
+  /*
+  while(sleep == 0){
+    sleep = digitalRead(holdPin);
+    delay(1000);
+  }*/
+
+  if (sleep == 1){
     readWaterLevel();
+    readSensors();
+  }
+  
+  HM10.listen();  // listen the HM10 port
+  while (HM10.available() > 0) {   // if HM10 sends something then read
+    appData = HM10.read();
+    inData = String(appData);  // save the data in string format
+    Serial.println(appData);
+  }
+ 
+  if (Serial.available()) {           // Read user input if available.
+    delay(10);
+    HM10.write(Serial.read());
+  }
+  if ( inData == "F") {
+    //Serial.println("LED OFF");
+    digitalWrite(6, LOW); // switch OFF LED
+  }
+  if ( inData == "N") {
+    //Serial.println("LED ON");
+    digitalWrite(6, HIGH); // switch OFF LED
   }
 }
