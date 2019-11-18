@@ -9,6 +9,7 @@ dht DHT;
 const int pResistor = A0; // Photoresistor at Arduino analog pin A0
 const int pMoisture=A1;       // moisture sensor at Arduino analog pin A1
 const int pump=4; 
+const int pump2=13; 
 const int trigPin = 11;
 const int echoPin = 10;
 const int holdPin = 12;
@@ -23,21 +24,27 @@ long duration;
 int distance;
 char appData;  
 String inData = "";
+unsigned long startMillis = 0;  
+unsigned long currentMillis = 0;
+const unsigned long interval = 5000;  //5 second time period 
 
 void setup(){
  pinMode(pump,OUTPUT);
+ pinMode(pump2,OUTPUT);
  pinMode(pResistor, INPUT);// Set pResistor - A0 pin as an input (optional)
  pinMode(pMoisture, INPUT);// Set pMoisture - A1 pin as an input (optional)
  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
  pinMode(holdPin, INPUT); // hold evreything
- pinMode(13, INPUT); // hold evreything
  pinMode(6, OUTPUT); // onboard LED
  digitalWrite(6, LOW); // switch OFF LED
  pinMode(7, OUTPUT); // onboard LED
  digitalWrite(7, LOW); // switch OFF LED
  pinMode(8, OUTPUT); // onboard LED
  digitalWrite(8, LOW); // switch OFF LED
+ pinMode(9, OUTPUT); // onboard LED
+ digitalWrite(9, LOW); // switch OFF LED
+ 
  Serial.begin(9600);
 
  Serial.println("Commands:");
@@ -65,13 +72,12 @@ void readSensors(){
   {
     digitalWrite(7, HIGH); // switch OFF LED
     Pump(1); 
-    digitalWrite(7, LOW); // switch OFF LED
   }
   else
   { 
     Pump(0);
+    digitalWrite(7, LOW); // switch OFF LED
   }
-  delay(2000);
 }
 
 void Pump(int stat)
@@ -125,10 +131,18 @@ void loop()
     sleep = digitalRead(holdPin);
     delay(1000);
   }*/
-
   if (sleep == 1){
-    readWaterLevel();
-    readSensors();
+    currentMillis = millis();  //timer start
+    if (currentMillis - startMillis >= interval) {
+      readWaterLevel();
+      readSensors();
+      startMillis = currentMillis;
+    }
+  }else{
+    digitalWrite(6, LOW); // switch OFF LED
+    digitalWrite(7, LOW); // switch OFF LED
+    digitalWrite(8, LOW); // switch OFF LED
+    digitalWrite(9, LOW); // switch OFF LED
   }
   
   HM10.listen();  // listen the HM10 port
@@ -142,6 +156,7 @@ void loop()
     delay(10);
     HM10.write(Serial.read());
   }
+  
   if ( inData == "F") {
     //Serial.println("LED OFF");
     digitalWrite(6, LOW); // switch OFF LED
@@ -150,4 +165,5 @@ void loop()
     //Serial.println("LED ON");
     digitalWrite(6, HIGH); // switch OFF LED
   }
+  
 }
