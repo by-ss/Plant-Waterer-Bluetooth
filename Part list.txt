@@ -1,0 +1,21 @@
+Electronic parts list:
+9V alkaline battery x1
+12V rechargeable battery x1
+Arduino Uno R3 x1
+Blue LED x3
+Red LED x1
+Yellow LED x1
+Green LED x1
+Youngneer 5V relay x2
+Brushless 6W DC water pump x2
+DHT11 temperature & humidity sensor x1
+TE215 soil moisture sensor x1
+Photoresistor x1
+HC-SR04 ultrasonic sensor x1
+HM-10 Bluetooth module x1
+10k resistor x3
+20k resistor x1
+220 resistor x6
+Jumper wires
+Wire connector x4
+Battery holder x1
