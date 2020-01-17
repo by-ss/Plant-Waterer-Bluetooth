@@ -1,0 +1,21 @@
+Connections:
+Table 1: arduino digital pins
+Arduino pin number	Component	Function
+A0	photoresistor	ambient light detection
+A1	TE215 moisture sensor	soil moisture monitoring
+A2	LED	water pump indication
+A3	LED	nutrient pump indication
+2	HM-10 Bluetooth RX pin	Bluetooth connection and communication
+3	HM-10 Bluetooth TX pin	
+4	pump #1	water pump
+5	DHT11 sensor	temperature & humidity monitoring
+6	LED	temperature indication
+7	LED	light indication
+8	LED	reservoir water level indication
+9	LED	humidity indication
+10	HC-SR04 sensor trig pin	Ultrasonic sensor connection and communication
+11	HC-SR04 sensor echo pin	
+13	pump #2	nutrient pump
+Vin	9V alkaline battery	power supply to Arduino
+5V	all components except LEDs	power supply to all active parts
+GND	all components	universal ground
